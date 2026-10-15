@@ -37,7 +37,12 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.core.ktx)
+
     implementation(libs.material)
+
+    implementation(libs.retrofit2.retrofit)
+    implementation(libs.retrofit2.converterscalars)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
