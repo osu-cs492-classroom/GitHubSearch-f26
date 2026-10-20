@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -41,7 +42,10 @@ dependencies {
     implementation(libs.material)
 
     implementation(libs.retrofit2.retrofit)
-    implementation(libs.retrofit2.converterscalars)
+    implementation(libs.retrofit2.convertermoshi)
+
+    implementation(libs.moshi)
+    ksp(libs.moshi.codegen)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)

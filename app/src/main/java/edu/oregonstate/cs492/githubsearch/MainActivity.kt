@@ -11,14 +11,18 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.moshi.JsonAdapter
 import edu.oregonstate.cs492.githubsearch.data.GitHubRepo
 import edu.oregonstate.cs492.githubsearch.data.GitHubService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import com.squareup.moshi.Moshi
+import edu.oregonstate.cs492.githubsearch.data.GitHubRepoSearchResults
 
 class MainActivity : AppCompatActivity() {
     private val githubService = GitHubService.create()
+    private val repoListAdapter = GitHubRepoListAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,21 +34,6 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val dummySearchResults = listOf(
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results")
-        )
-
         val searchBoxET: EditText = findViewById(R.id.et_search_box)
         val searchBtn: Button = findViewById(R.id.btn_search)
 
@@ -52,30 +41,35 @@ class MainActivity : AppCompatActivity() {
         searchResultsListRV.layoutManager = LinearLayoutManager(this)
         searchResultsListRV.setHasFixedSize(true)
 
-        val adapter = GitHubRepoListAdapter()
-        searchResultsListRV.adapter = adapter
+        searchResultsListRV.adapter = repoListAdapter
 
         searchBtn.setOnClickListener {
             val query = searchBoxET.text.toString()
             if (!TextUtils.isEmpty(query)) {
                 doGitHubSearch(query)
-                adapter.updateRepoList(dummySearchResults)
                 searchResultsListRV.scrollToPosition(0)
             }
         }
     }
 
     private fun doGitHubSearch(query: String) {
-        githubService.searchRepositories(query).enqueue(object : Callback<String> {
-            override fun onResponse(call: Call<String?>, response: Response<String?>) {
+        githubService.searchRepositories(query).enqueue(object : Callback<GitHubRepoSearchResults> {
+            override fun onResponse(call: Call<GitHubRepoSearchResults?>, response: Response<GitHubRepoSearchResults?>) {
                 Log.d("MainActivity", "Status code: ${response.code()}")
                 Log.d("MainActivity", "Response body: ${response.body()}")
+                if (response.isSuccessful) {
+//                    val moshi = Moshi.Builder().build()
+//                    val jsonAdapter: JsonAdapter<GitHubRepoSearchResults> = moshi.adapter(
+//                        GitHubRepoSearchResults::class.java
+//                    )
+//                    val searchResults = jsonAdapter.fromJson(response.body() ?: "")
+                    repoListAdapter.updateRepoList(response.body()?.items)
+                }
             }
 
-            override fun onFailure(call: Call<String?>, t: Throwable) {
+            override fun onFailure(call: Call<GitHubRepoSearchResults?>, t: Throwable) {
                 Log.e("MainActivity", "Error making API call: ${t.message}")
             }
         })
-
     }
 }
